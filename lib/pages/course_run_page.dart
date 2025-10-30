@@ -98,7 +98,17 @@ class _CourseRunPageState extends State<CourseRunPage> {
                       itemBuilder: (_, i) {
                         final active = i == index;
                         final completed = done.contains(i);
-                        return Container(width: 12, height: 12, decoration: BoxDecoration(color: completed ? Colors.green : (active ? Colors.blueGrey : Colors.grey), shape: BoxShape.circle));
+                        return InkWell(
+                          onTap: () => setState(() => index = i),
+                          child: Container(
+                            width: 14,
+                            height: 14,
+                            decoration: BoxDecoration(
+                              color: completed ? Colors.green : (active ? Colors.blueGrey : Colors.grey),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        );
                       },
                       separatorBuilder: (_, __) => const SizedBox(width: 8),
                       itemCount: total,

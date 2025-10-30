@@ -19,6 +19,7 @@ class _ProfilePageState extends State<ProfilePage> {
   bool loading = true;
   String? error;
   final storage = StorageService();
+  String? avatarUrl;
 
   @override
   void initState() {
@@ -32,6 +33,7 @@ class _ProfilePageState extends State<ProfilePage> {
       name.text = (data?['username'] as String?) ?? '';
       bio.text = (data?['bio'] as String?) ?? '';
       email.text = service.ready ? (service.sb.auth.currentUser?.email ?? '') : '';
+      avatarUrl = data?['avatar_url'] as String?;
     } catch (e) {
       error = humanizeAuthError(e);
     } finally {
@@ -55,7 +57,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       if (error != null) Text(error!, style: const TextStyle(color: Colors.red)),
                       const SizedBox(height: 8),
                       Row(children: [
-                        const CircleAvatar(radius: 28, child: Icon(Icons.person)),
+                        CircleAvatar(radius: 28, backgroundImage: (avatarUrl!=null && avatarUrl!.isNotEmpty) ? NetworkImage(avatarUrl!) : null, child: (avatarUrl==null || avatarUrl!.isEmpty) ? const Icon(Icons.person) : null),
                         const SizedBox(width: 12),
                         OutlinedButton.icon(
                           onPressed: () async {
@@ -63,6 +65,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               final url = await storage.pickAndUpload(bucket: 'avatars', pathPrefix: 'avatars');
                               if (url != null) {
                                 await service.updateProfile(avatarUrl: url);
+                                avatarUrl = url;
                                 if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Аватар обновлён')));
                               }
                             } catch (e) {

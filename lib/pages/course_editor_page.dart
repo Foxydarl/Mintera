@@ -110,7 +110,7 @@ class _CourseEditorScaffoldState extends State<CourseEditorPage> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Wrap(spacing: 16, runSpacing: 16, children: [
+          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             SizedBox(
               width: 400,
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -152,6 +152,7 @@ class _CourseEditorScaffoldState extends State<CourseEditorPage> {
                 ),
               ]),
             ),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 TextField(controller: descr, maxLines: 6, decoration: const InputDecoration(labelText: 'Описание')), 

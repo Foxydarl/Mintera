@@ -80,11 +80,12 @@ class _ProfilePageState extends State<ProfilePage> {
                       const SizedBox(height: 12),
                       TextField(controller: bio, maxLines: 3, decoration: const InputDecoration(labelText: 'Биография')),
                       const SizedBox(height: 16),
-                      FilledButton(
-                        onPressed: () async {
-                          try {
-                            await service.updateProfile(username: name.text.trim(), bio: bio.text.trim());
+                        FilledButton(
+                          onPressed: () async {
+                            try {
+                              await service.updateProfile(username: name.text.trim(), bio: bio.text.trim());
                             await service.updateEmail(email.text.trim());
+                            await _load();
                             if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Профиль обновлён')));
                           } catch (e) {
                             if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(humanizeAuthError(e))));

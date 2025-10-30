@@ -16,18 +16,12 @@ class ProfileService {
   Future<void> updateProfile({String? username, String? bio, String? avatarUrl}) async {
     if (!ready) return;
     final uid = sb.auth.currentUser!.id;
-    // Upsert safe columns first
     await sb.from('profiles').upsert({
       'id': uid,
       if (username != null) 'username': username,
       if (avatarUrl != null) 'avatar_url': avatarUrl,
+      if (bio != null) 'bio': bio,
     });
-    // Bio may not exist yet; try update and ignore if column missing
-    if (bio != null) {
-      try {
-        await sb.from('profiles').update({'bio': bio}).eq('id', uid);
-      } catch (_) {}
-    }
   }
 
   Future<void> updateEmail(String email) async {

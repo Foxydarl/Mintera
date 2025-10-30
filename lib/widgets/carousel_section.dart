@@ -6,7 +6,8 @@ import '../pages/course_detail_page.dart';
 class CarouselSection extends StatefulWidget {
   final String title;
   final List<Course> items;
-  const CarouselSection({super.key, required this.title, required this.items});
+  final VoidCallback? onReturnFromDetail;
+  const CarouselSection({super.key, required this.title, required this.items, this.onReturnFromDetail});
 
   @override
   State<CarouselSection> createState() => _CarouselSectionState();
@@ -54,9 +55,11 @@ class _CarouselSectionState extends State<CarouselSection> {
                           child: CourseCard(
                             course: widget.items[i],
                             onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(
+                              Navigator.of(context)
+                                  .push(MaterialPageRoute(
                                 builder: (_) => _CourseDetailRouter(course: widget.items[i]),
-                              ));
+                              ))
+                                  .then((_) => widget.onReturnFromDetail?.call());
                             },
                           ),
                         ),

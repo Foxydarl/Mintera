@@ -3,6 +3,7 @@ import '../models/course.dart';
 import '../supabase_manager.dart';
 import '../utils/error_messages.dart';
 import '../widgets/code_runner.dart';
+import 'course_run_page.dart';
 
 class CourseDetailPage extends StatefulWidget {
   final Course course;
@@ -94,7 +95,11 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
     }
     try {
       await sb.from('enrollments').upsert({'user_id': uid, 'course_id': widget.course.id, 'progress': 0});
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Прохождение начато')));
+      if (mounted) {
+        // перейти в режим прохождения
+        // ignore: use_build_context_synchronously
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => CourseRunPage(course: widget.course)));
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(humanizeAuthError(e))));
     }
@@ -179,17 +184,70 @@ class _SectionTileState extends State<_SectionTile> {
   }
 }
 
-class _TaskTile extends StatelessWidget {
+class _TaskTile extends StatefulWidget {
   final Map<String, dynamic> task;
   const _TaskTile({required this.task});
   @override
+  State<_TaskTile> createState() => _TaskTileState();
+}
+
+class _TaskTileState extends State<_TaskTile> {
+  String? chosen;
+  bool? correct;
+
+  Future<void> _saveSubmission({String? answer, String? code, bool? isCorrect}) async {
+    try {
+      final sb = SupabaseManager.client;
+      final uid = sb.auth.currentUser?.id;
+      if (uid == null) return;
+      await sb.from('task_submissions').insert({
+        'task_id': widget.task['id'],
+        'user_id': uid,
+        if (answer != null) 'answer': answer,
+        if (code != null) 'code': code,
+        if (isCorrect != null) 'is_correct': isCorrect,
+      });
+    } catch (_) {}
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final task = widget.task;
     final type = task['type'] as String? ?? 'free_text';
     if (type == 'multiple_choice') {
       final opts = List<String>.from(task['options'] ?? []);
+      final right = (task['answer'] ?? '').toString();
       return ListTile(
         title: Text(task['question'] ?? ''),
-        subtitle: Wrap(spacing: 8, children: opts.map((o)=>OutlinedButton(onPressed: (){}, child: Text(o))).toList()),
+        subtitle: Wrap(
+          spacing: 8,
+          children: opts.map((o) {
+            final isChosen = chosen == o;
+            final isCorrect = correct == true && isChosen;
+            final isWrong = correct == false && isChosen;
+            return OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                backgroundColor: isCorrect
+                    ? Colors.green.withOpacity(0.15)
+                    : isWrong
+                        ? Colors.red.withOpacity(0.15)
+                        : null,
+              ),
+              onPressed: () async {
+                final ok = o == right;
+                setState(() {
+                  chosen = o;
+                  correct = ok;
+                });
+                await _saveSubmission(answer: o, isCorrect: ok);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(ok ? 'Верно!' : 'Неверно')),
+                );
+              },
+              child: Text(o),
+            );
+          }).toList(),
+        ),
       );
     }
     if (type == 'code') {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class HeaderBar extends StatelessWidget implements PreferredSizeWidget {
   final ValueChanged<String>? onSearch;
@@ -13,6 +14,7 @@ class HeaderBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onProfile;
   final VoidCallback? onSettings;
   final VoidCallback? onMyCourses;
+  final String? avatarUrl;
 
   const HeaderBar({
     super.key,
@@ -27,6 +29,7 @@ class HeaderBar extends StatelessWidget implements PreferredSizeWidget {
     this.onProfile,
     this.onSettings,
     this.onMyCourses,
+    this.avatarUrl,
   });
 
   @override
@@ -86,13 +89,14 @@ class HeaderBar extends StatelessWidget implements PreferredSizeWidget {
                           color: theme.colorScheme.surfaceVariant.withOpacity(0.6),
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: Row(
-                          children: [
-                            Text(userName ?? 'Профиль'),
-                            const SizedBox(width: 10),
-                            const CircleAvatar(radius: 8, backgroundColor: AppColors.primaryLight),
-                          ],
-                        ),
+                        child: Row(children: [
+                          if (avatarUrl != null && avatarUrl!.isNotEmpty)
+                            CircleAvatar(radius: 12, backgroundImage: NetworkImage(avatarUrl!))
+                          else
+                            const CircleAvatar(radius: 12, backgroundColor: AppColors.primaryLight),
+                          const SizedBox(width: 10),
+                          Text(userName ?? 'Профиль'),
+                        ]),
                       ),
                     ),
                     itemBuilder: (context) => const [
@@ -118,34 +122,7 @@ class HeaderBar extends StatelessWidget implements PreferredSizeWidget {
 class _Logo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              colors: [AppColors.primaryDark, AppColors.primaryLight],
-              begin: Alignment.bottomLeft,
-              end: Alignment.topRight,
-            ),
-          ),
-          child: const Center(
-            child: Text('M', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 22)),
-          ),
-        ),
-        const SizedBox(width: 10),
-        const Text(
-          'mintera',
-          style: TextStyle(
-            color: AppColors.primary,
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.5,
-          ),
-        ),
-      ],
-    );
+    return SvgPicture.asset('assets/logo.svg', height: 36);
   }
 }
+

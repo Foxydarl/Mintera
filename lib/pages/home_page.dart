@@ -5,6 +5,7 @@ import '../services/course_service.dart';
 import '../widgets/carousel_section.dart';
 import '../widgets/header_bar.dart';
 import '../services/auth_service.dart';
+import '../services/profile_service.dart';
 import '../utils/error_messages.dart';
 import 'profile_page.dart';
 import 'settings_page.dart';
@@ -29,6 +30,7 @@ class _HomePageState extends State<HomePage> {
   bool _loading = true;
   bool _loggedIn = false;
   String? _userName;
+  String? _avatarUrl;
 
   @override
   void initState() {
@@ -37,15 +39,26 @@ class _HomePageState extends State<HomePage> {
     if (_auth.isReady) {
       _loggedIn = _auth.currentUser != null;
       _userName = _auth.userName;
+      _loadProfile();
       _auth.onAuthStateChange().listen((event) {
         if (mounted) {
           setState(() {
             _loggedIn = _auth.currentUser != null;
             _userName = _auth.userName;
+            _avatarUrl = null;
           });
+          _loadProfile();
         }
       });
     }
+  }
+
+  Future<void> _loadProfile() async {
+    if (_auth.currentUser == null) return;
+    try {
+      final prof = await ProfileService().fetchProfile();
+      if (mounted) setState(() => _avatarUrl = prof?['avatar_url'] as String?);
+    } catch (_) {}
   }
 
   Future<void> _load([String q = '']) async {
@@ -76,6 +89,7 @@ class _HomePageState extends State<HomePage> {
         controller: _search,
         isLoggedIn: _loggedIn,
         userName: _userName,
+        avatarUrl: _avatarUrl,
         onSignOut: () async {
           await _auth.signOut();
           if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Вы вышли из аккаунта')));

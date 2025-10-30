@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../constants.dart';
 import '../models/course.dart';
+import '../supabase_manager.dart';
 
 class CourseCard extends StatelessWidget {
   final Course course;
@@ -55,7 +56,22 @@ class CourseCard extends StatelessWidget {
           const SizedBox(height: 6),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text('Автор ${course.author}', style: const TextStyle(fontSize: 12)),
+            child: Builder(builder: (context) {
+              String authorLabel = (course.author).toString();
+              try {
+                final uid = SupabaseManager.initialized ? SupabaseManager.client.auth.currentUser?.id : null;
+                if (course.owner != null && uid != null && course.owner == uid) {
+                  authorLabel = 'Вы';
+                } else {
+                  // Не показываем "Вы" для чужих курсов или когда пользователь не авторизован
+                  final lower = authorLabel.trim().toLowerCase();
+                  if (lower == 'вы' || lower == 'you') {
+                    authorLabel = 'Автор';
+                  }
+                }
+              } catch (_) {}
+              return Text('Автор $authorLabel', style: const TextStyle(fontSize: 12));
+            }),
           ),
           const Spacer(),
           Padding(

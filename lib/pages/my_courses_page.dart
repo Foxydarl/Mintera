@@ -5,6 +5,7 @@ import '../supabase_manager.dart';
 import '../utils/error_messages.dart';
 import 'course_editor_page.dart';
 import '../constants.dart';
+import '../services/profile_service.dart';
 
 class MyCoursesPage extends StatefulWidget {
   const MyCoursesPage({super.key});
@@ -89,11 +90,22 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
           if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Сначала войдите.')));
           return;
         }
+        // resolve author name
+        String authorName = 'Автор';
+        try {
+          final prof = await ProfileService().fetchProfile();
+          authorName = (prof?['username'] as String?)?.trim().isNotEmpty == true
+              ? (prof?['username'] as String)
+              : (SupabaseManager.client.auth.currentUser?.email ?? 'Автор');
+        } catch (_) {
+          authorName = SupabaseManager.client.auth.currentUser?.email ?? 'Автор';
+        }
+
         await SupabaseManager.client.from('courses').insert({
           'title': title.text.trim(),
           'category': category,
           'price': int.tryParse(price.text) ?? 0,
-          'author': 'Вы',
+          'author': authorName,
           'owner': uid,
           'description': '',
           'image_url': imageUrl.text.trim(),

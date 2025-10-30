@@ -18,6 +18,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
   bool liked = false;
   double myRating = 0;
   bool loading = true;
+  bool isOwner = false;
 
   @override
   void initState() {
@@ -38,6 +39,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         final r = await sb.from('course_ratings').select('rating').eq('course_id', cid).eq('user_id', uid).maybeSingle();
         myRating = (r?['rating'] as num?)?.toDouble() ?? 0;
       }
+      isOwner = (sb.auth.currentUser?.id != null) && (widget.course.owner == sb.auth.currentUser!.id);
     } catch (_) {}
     if (mounted) setState(() => loading = false);
   }
@@ -127,10 +129,10 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                       Text(c.description.isNotEmpty ? c.description : 'Описание не заполнено'),
                       const SizedBox(height: 8),
                       Row(children: [
-                        IconButton(onPressed: _toggleLike, icon: Icon(liked ? Icons.favorite : Icons.favorite_border, color: liked ? Colors.pink : null)),
+                        IconButton(onPressed: isOwner ? null : _toggleLike, icon: Icon(liked ? Icons.favorite : Icons.favorite_border, color: liked ? Colors.pink : null)),
                         const SizedBox(width: 8),
                         const Text('Оценка:'),
-                        Slider(value: myRating, onChanged: (v) => _saveRating(v), divisions: 10, min: 0, max: 5, label: myRating.toStringAsFixed(1)),
+                        Slider(value: myRating, onChanged: isOwner ? null : (v) => _saveRating(v), divisions: 10, min: 0, max: 5, label: myRating.toStringAsFixed(1)),
                         const Spacer(),
                         FilledButton(onPressed: _startCourse, child: const Text('Начать курс')),
                       ]),

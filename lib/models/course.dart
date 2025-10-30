@@ -9,6 +9,7 @@ class Course {
   final int likes;
   final double rating;
   final String category;
+  final String? owner;
 
   Course({
     required this.id,
@@ -21,6 +22,7 @@ class Course {
     required this.likes,
     required this.rating,
     required this.category,
+    this.owner,
   });
 
   factory Course.fromMap(Map<String, dynamic> map) => Course(
@@ -34,6 +36,6 @@ class Course {
         likes: (map['likes'] ?? 0) as int,
         rating: (map['rating'] ?? 0).toDouble(),
         category: map['category'] ?? 'Общее',
+        owner: map['owner']?.toString(),
       );
 }
-

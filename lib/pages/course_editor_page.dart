@@ -189,11 +189,13 @@ class _CourseEditorScaffoldState extends State<CourseEditorPage> {
                           onSelected: (v) {
                             if (v == 'add_lesson') _addLessonToSection(l['id']);
                             if (v == 'add_task') _addTaskToSection(l['id']);
+                            if (v == 'add_sub') _quickAddSubsection(l);
                             if (v == 'delete') _deleteSection(l['id']);
                           },
                           itemBuilder: (ctx) => const [
                             PopupMenuItem(value: 'add_lesson', child: Text('Добавить урок')),
                             PopupMenuItem(value: 'add_task', child: Text('Добавить задание')),
+                            PopupMenuItem(value: 'add_sub', child: Text('Добавить подраздел')),
                             PopupMenuDivider(),
                             PopupMenuItem(value: 'delete', child: Text('Удалить раздел')),
                           ],
@@ -367,6 +369,24 @@ class _CourseEditorScaffoldState extends State<CourseEditorPage> {
       await _loadSections();
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(humanizeAuthError(e))));
+    }
+  }
+
+  Future<void> _quickAddSubsection(Map<String, dynamic> section) async {
+    try {
+      final row = await SupabaseManager.client
+          .from('course_subsections')
+          .insert({'section_id': section['id'], 'title': 'Новый подраздел', 'order_index': 999})
+          .select()
+          .single();
+      await Navigator.of(context).push(MaterialPageRoute(
+        builder: (_) => SectionEditorPage(sectionId: section['id'], sectionTitle: section['title'] ?? ''),
+      ));
+      await _loadSections();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(humanizeAuthError(e))));
+      }
     }
   }
 }

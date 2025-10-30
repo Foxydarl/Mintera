@@ -88,14 +88,15 @@ class _HomePageState extends State<HomePage> {
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : Center(
+            : Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 1200),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
                       const SizedBox(height: 4),
                       CarouselSection(title: 'Онлайн-курсы', items: _online, onReturnFromDetail: () => _load(_search.text)),
                       const SizedBox(height: 10),
@@ -106,7 +107,8 @@ class _HomePageState extends State<HomePage> {
                       CarouselSection(title: AppCategories.modeling, items: _model, onReturnFromDetail: () => _load(_search.text)),
                       const SizedBox(height: 10),
                       CarouselSection(title: AppCategories.other, items: _other, onReturnFromDetail: () => _load(_search.text)),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

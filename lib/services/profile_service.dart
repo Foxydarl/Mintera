@@ -16,12 +16,24 @@ class ProfileService {
   Future<void> updateProfile({String? username, String? bio, String? avatarUrl}) async {
     if (!ready) return;
     final uid = sb.auth.currentUser!.id;
-    await sb.from('profiles').upsert({
-      'id': uid,
-      if (username != null) 'username': username,
-      if (avatarUrl != null) 'avatar_url': avatarUrl,
-      if (bio != null) 'bio': bio,
-    });
+    try {
+      await sb.from('profiles').upsert({
+        'id': uid,
+        if (username != null) 'username': username,
+        if (avatarUrl != null) 'avatar_url': avatarUrl,
+        if (bio != null) 'bio': bio,
+      });
+    } catch (_) {
+      // fallback without bio if column missing
+      await sb.from('profiles').upsert({
+        'id': uid,
+        if (username != null) 'username': username,
+        if (avatarUrl != null) 'avatar_url': avatarUrl,
+      });
+      if (bio != null) {
+        try { await sb.from('profiles').update({'bio': bio}).eq('id', uid); } catch (_) {}
+      }
+    }
   }
 
   Future<void> updateEmail(String email) async {

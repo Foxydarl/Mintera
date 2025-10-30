@@ -4,6 +4,7 @@ import '../constants.dart';
 import '../supabase_manager.dart';
 import '../utils/error_messages.dart';
 import '../services/storage_service.dart';
+import 'section_editor_page.dart';
 
 class CourseEditorPage extends StatefulWidget {
   final Course course;
@@ -124,8 +125,14 @@ class _CourseEditorScaffoldState extends State<CourseEditorPage> {
                 const SizedBox(height: 10),
                 TextField(controller: price, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Цена, ₽')), 
                 const SizedBox(height: 10),
-                TextField(controller: imageUrl, decoration: const InputDecoration(labelText: 'Ссылка на обложку (URL)')),
-                const SizedBox(height: 8),
+                if (imageUrl.text.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(imageUrl.text, height: 120, width: double.infinity, fit: BoxFit.cover, errorBuilder: (_, __, ___)=>const SizedBox()),
+                    ),
+                  ),
                 OutlinedButton.icon(
                   onPressed: () async {
                     try {
@@ -176,14 +183,18 @@ class _CourseEditorScaffoldState extends State<CourseEditorPage> {
                       subtitle: Text((l['description'] ?? '').toString(), maxLines: 2, overflow: TextOverflow.ellipsis),
                       trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                         IconButton(icon: const Icon(Icons.edit), onPressed: () => _editSection(l)),
+                        IconButton(icon: const Icon(Icons.open_in_new), onPressed: () => _openSection(l)),
                         PopupMenuButton<String>(
                           onSelected: (v) {
                             if (v == 'add_lesson') _addLessonToSection(l['id']);
                             if (v == 'add_task') _addTaskToSection(l['id']);
+                            if (v == 'delete') _deleteSection(l['id']);
                           },
                           itemBuilder: (ctx) => const [
                             PopupMenuItem(value: 'add_lesson', child: Text('Добавить урок')),
                             PopupMenuItem(value: 'add_task', child: Text('Добавить задание')),
+                            PopupMenuDivider(),
+                            PopupMenuItem(value: 'delete', child: Text('Удалить раздел')),
                           ],
                         ),
                       ]),
@@ -337,6 +348,24 @@ class _CourseEditorScaffoldState extends State<CourseEditorPage> {
       } catch (e) {
         if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(humanizeAuthError(e))));
       }
+    }
+  }
+
+  Future<void> _openSection(Map<String, dynamic> section) async {
+    // Navigate to section editor with lists of lessons/tasks
+    if (!mounted) return;
+    await Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => SectionEditorPage(sectionId: section['id'], sectionTitle: section['title'] ?? ''),
+    ));
+    await _loadSections();
+  }
+
+  Future<void> _deleteSection(String id) async {
+    try {
+      await SupabaseManager.client.from('course_sections').delete().eq('id', id);
+      await _loadSections();
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(humanizeAuthError(e))));
     }
   }
 }

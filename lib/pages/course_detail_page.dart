@@ -132,9 +132,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                         const Text('Оценка:'),
                         Slider(value: myRating, onChanged: (v) => _saveRating(v), divisions: 10, min: 0, max: 5, label: myRating.toStringAsFixed(1)),
                         const Spacer(),
-                        OutlinedButton(onPressed: _startCourse, child: const Text('Начать курс')),
-                        const SizedBox(width: 8),
-                        FilledButton(onPressed: _markCompleted, child: const Text('Отметить как пройден')),
+                        FilledButton(onPressed: _startCourse, child: const Text('Начать курс')),
                       ]),
                     ]),
                   )
@@ -177,8 +175,8 @@ class _SectionTileState extends State<_SectionTile> {
       subtitle: Text((widget.section['description'] ?? '').toString()),
       onExpansionChanged: (v) { expanded = v; if (v) _load(); },
       children: [
-        ...lessons.map((l) => ListTile(title: Text(l['title'] ?? ''), subtitle: Text((l['content'] ?? '').toString()))),
-        ...tasks.map((t) => _TaskTile(task: t)),
+        ...lessons.map((l) => ListTile(title: Text(l['title'] ?? ''), subtitle: Text((l['content'] ?? '').toString()), leading: const Icon(Icons.menu_book))),
+        ...tasks.map((t) => ListTile(title: Text(t['question'] ?? ''), leading: const Icon(Icons.task_alt))),
       ],
     );
   }
